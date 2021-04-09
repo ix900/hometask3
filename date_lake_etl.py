@@ -22,11 +22,24 @@ ods_billing = DataProcHiveOperator(
     task_id='ods_billing',
     dag=dag,
     query="""
-        insert overwrite table dlybin.ods_billing partition (year='{{ execution_date.year }}') 
+        insert overwrite table dlybin.ods_billing partition (year={{ execution_date.year }}) 
         select user_id,cast(replace(billing_period,"-","") as int),service,tariff,sum,created_at from dlybin.stg_billing where year(created_at) = {{ execution_date.year }};
     """,
     cluster_name='cluster-dataproc',
     job_name=USERNAME + '_ods_billing_{{ execution_date.year }}_{{ params.job_suffix }}',
+    params={"job_suffix": randint(0, 100000)},
+    region='europe-west3',
+)
+
+ods_issue = DataProcHiveOperator(
+    task_id='ods_issue',
+    dag=dag,
+    query="""
+        insert overwrite table dlybin.ods_issue partition (year={{ execution_date.year }}) 
+        select user_id,cast(start_time as timestamp),cast(end_time as timestamp),title,description,service from dlybin.stg_issue where year(end_time) = {{ execution_date.year }};
+    """,
+    cluster_name='cluster-dataproc',
+    job_name=USERNAME + '_ods_issue_{{ execution_date.year }}_{{ params.job_suffix }}',
     params={"job_suffix": randint(0, 100000)},
     region='europe-west3',
 )
