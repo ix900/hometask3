@@ -43,3 +43,44 @@ ods_issue = DataProcHiveOperator(
     params={"job_suffix": randint(0, 100000)},
     region='europe-west3',
 )
+
+ods_payment = DataProcHiveOperator(
+    task_id='ods_payment',
+    dag=dag,
+    query="""
+        insert overwrite table dlybin.ods_payment partition (year={{ execution_date.year }}) 
+        select user_id,pay_doc_type, cast(pay_doc_num as int), account, phone, cast(replace(billing_period,"-","") as int), cast(pay_date as timestamp),cast(sum as decimal(20,2))
+        from dlybin.stg_payment where year(pay_date) = {{ execution_date.year }};
+    """,
+    cluster_name='cluster-dataproc',
+    job_name=USERNAME + '_ods_payment_{{ execution_date.year }}_{{ params.job_suffix }}',
+    params={"job_suffix": randint(0, 100000)},
+    region='europe-west3',
+)
+
+ods_traffic = DataProcHiveOperator(
+    task_id='ods_traffic',
+    dag=dag,
+    query="""
+       insert overwrite table dlybin.ods_traffic partition (year={{ execution_date.year }}) 
+       select user_id,cast(from_unixtime(cast(`timestamp`/1000 as bigint)) as timestamp), device_id,device_ip_addr, cast(bytes_sent as int),cast(bytes_received as int) 
+       from dlybin.stg_traffic where year(from_unixtime(cast(`timestamp`/1000 as bigint))) = {{ execution_date.year }};
+    """,
+    cluster_name='cluster-dataproc',
+    job_name=USERNAME + '_ods_traffic_{{ execution_date.year }}_{{ params.job_suffix }}',
+    params={"job_suffix": randint(0, 100000)},
+    region='europe-west3',
+)
+
+dm_traffic = DataProcHiveOperator(
+    task_id='dm_traffic',
+    dag=dag,
+    query="""
+       insert overwrite table dlybin.dm_traffic partition (year={{ execution_date.year }}) select user_id,max(bytes_received), min(bytes_received), avg(bytes_received), year(event_ts) 
+       from dlybin.ods_traffic where year(event_ts) = {{ execution_date.year }} group by user_id,year(event_ts);
+    """,
+    cluster_name='cluster-dataproc',
+    job_name=USERNAME + '_dm_traffic_{{ execution_date.year }}_{{ params.job_suffix }}',
+    params={"job_suffix": randint(0, 100000)},
+    region='europe-west3',
+)
