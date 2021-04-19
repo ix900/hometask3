@@ -2,7 +2,8 @@ from datetime import timedelta, datetime
 from random import randint
 
 from airflow import DAG
-from airflow.contrib.operators.dataproc_operator import DataProcHiveOperator
+from airflow.operators.postgres_operator import PostgresOperator
+from airflow.operators.dummy_operator import DummyOperator
 
 USERNAME = 'dlybin'
 
