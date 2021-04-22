@@ -37,13 +37,31 @@ fill_ods = PostgresOperator(
     """
 )
 
+clear_payment_hashed = PostgresOperator(
+    task_id="clear_payment_hashed",
+    dag=dag,
+    sql="""        
+        DELETE FROM  {{ params.schemaName }}.ods_payment_hashed          
+         WHERE EXTRACT(YEAR FROM pay_date::DATE) = {{ execution_date.year }}    
+
+    """
+)
 
 
+fill_payment_hashed = PostgresOperator(
+    task_id="create_view",
+    dag=dag,
+    sql="""        
+        INSERT INTO {{ params.schemaName }}.ods_payment_hashed
+         SELECT *, '{{ execution_date }}'::TIMESTAMP FROM dlybin.ods_v_payment 
+         WHERE EXTRACT(YEAR FROM pay_date::DATE) = {{ execution_date.year }}    
 
+    """
+)
 
 ods_loaded = DummyOperator(task_id="ods_loaded", dag=dag)
 
-clear_ods >> fill_ods >> ods_loaded
+clear_ods >> fill_ods >> clear_payment_hashed >> fill_payment_hashed >> ods_loaded
 
 all_hub_loaded = DummyOperator(task_id="all_hub_loaded", dag=dag)
 
