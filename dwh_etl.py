@@ -148,7 +148,7 @@ for h in hubs.keys():
 
 all_hub_loaded = DummyOperator(task_id="all_hub_loaded", dag=dag)
 
-fill_hab >> all_hub_loaded
+ods_loaded >> fill_hab >> all_hub_loaded
 
 
 all_link_loaded = DummyOperator(task_id="all_link_loaded", dag=dag)
