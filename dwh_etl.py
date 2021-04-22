@@ -132,13 +132,15 @@ ods_loaded = DummyOperator(task_id="ods_loaded", dag=dag)
 
 clear_ods >> fill_ods >> create_v_payment >> ods_loaded
 
+all_hub_loaded = DummyOperator(task_id="all_hub_loaded", dag=dag)
+
 #hubs
 hubs = {'user': {'fields': ['USER_PK','USER_KEY','LOAD_DATE','RECORD_SOURCE']},
         'billing': {'fields': ['BILLING_PERIOD_PK', 'BILLING_PERIOD_KEY', 'LOAD_DATE', 'RECORD_SOURCE']},
         'paydoctype': {'fields': ['PAY_DOC_TYPE_PK', 'PAY_DOC_TYPE_KEY', 'LOAD_DATE', 'RECORD_SOURCE']},
         'account': {'fields': ['ACCOUNT_PK', 'ACCOUNT_KEY', 'LOAD_DATE', 'RECORD_SOURCE']}
        }
-seq_task = ""
+
 for h in hubs.keys():
     fields = ','.join(hubs[h]['fields'])
     fill_hab = PostgresOperator(
@@ -148,10 +150,10 @@ for h in hubs.keys():
         insert into {{ params.schemaName }}.dds_hub_%s (%s)
         select %s from {{ params.schemaName }}.dds_hub_%s_etl                          
     """ % (h, fields, fields, h))
-    seq_task = "fill_hub_%s >> " % h
+    ods_loaded >> fill_hab >> all_hub_loaded
 
-all_hub_loaded = DummyOperator(task_id="all_hub_loaded", dag=dag)
-ods_loaded >> seq_task[:-3] >> all_hub_loaded
+
+
 
 
 
