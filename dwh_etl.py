@@ -41,7 +41,7 @@ create_v_payment = PostgresOperator(
     task_id="create_view",
     dag=dag,
     sql="""
-        create or replace view dlybin.ods_v_payment as (
+        create or replace view dlybin.ods_v_payment as
             with staging_payment as (
                 with derived_columns as (
                     select user_id,
@@ -124,7 +124,7 @@ create_v_payment = PostgresOperator(
     SELECT *, '{{ execution_date }}'::TIMESTAMP as LOAD_DATE,
            pay_date as EFFECTIVE_FROM
     FROM staging_payment
-)
+
     """
 )
 
