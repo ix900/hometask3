@@ -37,18 +37,20 @@ fill_ods = PostgresOperator(
     """
 )
 
-create_v_payment = PostgresOperator(
-    task_id="create_view",
+clear_payment_hashed = PostgresOperator(
+    task_id="clear_payment_hashed",
     dag=dag,
     sql="""        
-        DROP VIEW dlybin.ods_v_payment    
+       DROP VIEW dlybin.ods_v_payment CASCADE; 
 
     """
 )
 
+
+
 ods_loaded = DummyOperator(task_id="ods_loaded", dag=dag)
 
-clear_ods >> fill_ods >> create_v_payment >> ods_loaded
+clear_ods >> fill_ods >> clear_payment_hashed >> ods_loaded
 
 all_hub_loaded = DummyOperator(task_id="all_hub_loaded", dag=dag)
 
