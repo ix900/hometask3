@@ -49,7 +49,7 @@ clear_payment_hashed = PostgresOperator(
 
 
 fill_payment_hashed = PostgresOperator(
-    task_id="create_view",
+    task_id="fill_payment_hashed",
     dag=dag,
     sql="""        
         INSERT INTO {{ params.schemaName }}.ods_payment_hashed
