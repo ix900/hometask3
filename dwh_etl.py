@@ -84,11 +84,48 @@ for h in hubs.keys():
     ods_loaded >> fill_hab >> all_hub_loaded
 
 
-
-
-
-
+#link
 all_link_loaded = DummyOperator(task_id="all_link_loaded", dag=dag)
 
+
+
+
+#sat
 all_sat_loaded = DummyOperator(task_id="all_sat_loaded", dag=dag)
+sats = {'user_info': {'fields': ['USER_PK','USER_HASHDIFF','PHONE','EFFECTIVE_DATE','LOAD_DATE','RECORD_SOURCE']}
+        }
+for s in sats.keys():
+    fill_sat = PostgresOperator(
+        task_id="fill_sat_%s" % s,
+        dag=dag,
+        sql="""
+               INSERT INTO {{ params.schemaName }}.dds_sat_user_info (%s) 
+               WITH source_data AS (
+                    SELECT %s
+                    FROM {{ params.schemaName }}.ods_payment_hashed v
+                    WHERE v.LOAD_DATE <= '{{ execution_date }}'::TIMESTAMP 
+                ),
+                     update_records AS (
+                         SELECT info.*
+                         FROM {{ params.schemaName }}.dds_sat_user_info as info
+                         JOIN source_data as src 
+                            ON src.USER_PK = info.USER_PK AND info.LOAD_DATE <= (select max(LOAD_DATE) from source_data)
+                     ),
+                     latest_records AS (
+                         SELECT * FROM (
+                             SELECT upt.USER_PK,upt.USER_HASHDIFF,upt.LOAD_DATE,
+                                    rank() OVER(PARTITION BY upt.USER_PK ORDER BY upt.LOAD_DATE DESC) rank_1
+                             FROM update_records as upt
+                                       ) as lts
+                         WHERE lts.rank_1 = 1
+                     )
+                         select DISTINCT src.*
+                         FROM source_data as src
+                         LEFT JOIN latest_records as lts ON lts.USER_HASHDIFF = src.USER_HASHDIFF AND lts.USER_PK = src.USER_PK
+                         WHERE lts.USER_HASHDIFF is null
+            """)
+    all_hub_loaded >> fill_sat >> all_sat_loaded
+
+
+
 
