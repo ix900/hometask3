@@ -98,7 +98,7 @@ sats = {'user_info': {'fields': ['PHONE','EFFECTIVE_DATE','LOAD_DATE','RECORD_SO
                       'key': 'USER_PK','hashdiff':'USER_HASHDIFF'
                      }
         ,
-        'link_payment': {'fields': ['PAY_PK', 'PAY_HASHDIFF', 'PAY_DOC_NUM', 'PAY_DATE', 'SUM', 'EFFECTIVE_DATE',
+        'link_payment': {'fields': ['PAY_DOC_NUM', 'PAY_DATE', 'SUM', 'EFFECTIVE_DATE',
                                     'LOAD_DATE', 'RECORD_SOURCE'],
                          'key': 'PAY_PK', 'hashdiff': 'PAY_HASHDIFF'
                          }
