@@ -71,7 +71,7 @@ all_hub_loaded = DummyOperator(task_id="all_hub_loaded", dag=dag)
 hubs_link = {'hub_user': {'fields': ['USER_PK','USER_KEY','LOAD_DATE','RECORD_SOURCE']},
         'hub_billing': {'fields': ['BILLING_PERIOD_PK', 'BILLING_PERIOD_KEY', 'LOAD_DATE', 'RECORD_SOURCE']},
         'hub_paydoctype': {'fields': ['PAY_DOC_TYPE_PK', 'PAY_DOC_TYPE_KEY', 'LOAD_DATE', 'RECORD_SOURCE']},
-        'hub_account': {'fields': ['ACCOUNT_PK', 'ACCOUNT_KEY', 'LOAD_DATE', 'RECORD_SOURCE']}
+        'hub_account': {'fields': ['ACCOUNT_PK', 'ACCOUNT_KEY', 'LOAD_DATE', 'RECORD_SOURCE']},
         'link_payment': {'fields': ['PAY_PK','USER_PK', 'ACCOUNT_PK', 'BILLING_PERIOD_PK', 'PAY_DOC_TYPE_PK', 'LOAD_DATE', 'RECORD_SOURCE']}
        }
 
