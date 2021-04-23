@@ -1,9 +1,11 @@
 from datetime import timedelta, datetime
 from random import randint
+from itertools import chain
 
 from airflow import DAG
 from airflow.operators.postgres_operator import PostgresOperator
 from airflow.operators.dummy_operator import DummyOperator
+
 
 USERNAME = 'dlybin'
 
@@ -92,10 +94,21 @@ all_link_loaded = DummyOperator(task_id="all_link_loaded", dag=dag)
 
 #sat
 all_sat_loaded = DummyOperator(task_id="all_sat_loaded", dag=dag)
-sats = {'user_info': {'fields': ['USER_PK','USER_HASHDIFF','PHONE','EFFECTIVE_DATE','LOAD_DATE','RECORD_SOURCE']}
+sats = {'user_info': {'fields': ['PHONE','EFFECTIVE_DATE','LOAD_DATE','RECORD_SOURCE'],
+                      'key': 'USER_PK','hashdiff':'USER_HASHDIFF'
+                     }
+        ,
+        'link_payment': {'fields': ['PAY_PK', 'PAY_HASHDIFF', 'PAY_DOC_NUM', 'PAY_DATE', 'SUM', 'EFFECTIVE_DATE',
+                                    'LOAD_DATE', 'RECORD_SOURCE'],
+                         'key': 'PAY_PK', 'hashdiff': 'PAY_HASHDIFF'
+                         }
         }
+
+listmerge = lambda lst: list(chain(*lst))
 for sat in sats.keys():
-    fields_sat = ','.join(sats[sat]['fields'])
+    fields_sat = listmerge([[sats[sat]['key'], sats[sat]['hashdiff']], sats[sat]['fields']])
+    key_sat = sats[sat]['key']
+    hash_sat = sats[sat]['hashdiff']
     fill_sat = PostgresOperator(
         task_id="fill_sat_%s" % sat,
         dag=dag,
@@ -107,23 +120,23 @@ for sat in sats.keys():
                     WHERE v.LOAD_DATE <= '{{ execution_date }}'::TIMESTAMP 
                 ),
                      update_records AS (
-                         SELECT info.*
-                         FROM {{ params.schemaName }}.dds_sat_%s as info
+                         SELECT satt.*
+                         FROM {{ params.schemaName }}.dds_sat_%s as satt
                          JOIN source_data as src 
-                            ON src.USER_PK = info.USER_PK AND info.LOAD_DATE <= (select max(LOAD_DATE) from source_data)
+                            ON src.%s = satt.%s AND satt.LOAD_DATE <= (select max(LOAD_DATE) from source_data)
                      ),
                      latest_records AS (
                          SELECT * FROM (
-                             SELECT upt.USER_PK,upt.USER_HASHDIFF,upt.LOAD_DATE,
-                                    rank() OVER(PARTITION BY upt.USER_PK ORDER BY upt.LOAD_DATE DESC) rank_1
+                             SELECT upt.*,
+                                    rank() OVER(PARTITION BY upt.%s ORDER BY upt.LOAD_DATE DESC) rank_1
                              FROM update_records as upt
                                        ) as lts
                          WHERE lts.rank_1 = 1
                      )
                          select DISTINCT src.*
                          FROM source_data as src
-                         LEFT JOIN latest_records as lts ON lts.USER_HASHDIFF = src.USER_HASHDIFF AND lts.USER_PK = src.USER_PK
-                         WHERE lts.USER_HASHDIFF is null
-            """ % (sat, fields_sat, fields_sat, sat)
+                         LEFT JOIN latest_records as lts ON lts.%s = src.%s AND lts.%s = src.%s
+                         WHERE lts.%s is null
+            """ % (sat, fields_sat, fields_sat, sat, key_sat, key_sat, key_sat, key_sat, key_sat, hash_sat, hash_sat, hash_sat  )
     )
     all_hub_loaded >> fill_sat >> all_sat_loaded
