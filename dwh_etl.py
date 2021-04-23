@@ -108,7 +108,7 @@ for sat in sats.keys():
                 ),
                      update_records AS (
                          SELECT info.*
-                         FROM {{ params.schemaName }}.dds_sat_user_info as info
+                         FROM {{ params.schemaName }}.dds_sat_%s as info
                          JOIN source_data as src 
                             ON src.USER_PK = info.USER_PK AND info.LOAD_DATE <= (select max(LOAD_DATE) from source_data)
                      ),
@@ -124,6 +124,6 @@ for sat in sats.keys():
                          FROM source_data as src
                          LEFT JOIN latest_records as lts ON lts.USER_HASHDIFF = src.USER_HASHDIFF AND lts.USER_PK = src.USER_PK
                          WHERE lts.USER_HASHDIFF is null
-            """ % (sat, fields_sat, fields_sat)
+            """ % (sat, fields_sat, fields_sat, sat)
     )
     all_hub_loaded >> fill_sat >> all_sat_loaded
