@@ -143,4 +143,4 @@ for sat in sats.keys():
     if re.match(r'^link_.{1,}$', sat) is None:
         all_hub_loaded >> fill_sat >> all_sat_loaded
     else:
-        all_link_loaded >> fill_sat >> all_link_loaded
+        all_link_loaded >> fill_sat >> all_sat_loaded
