@@ -106,7 +106,7 @@ sats = {'user_info': {'fields': ['PHONE','EFFECTIVE_DATE','LOAD_DATE','RECORD_SO
 
 listmerge = lambda lst: list(chain(*lst))
 for sat in sats.keys():
-    fields_sat = listmerge([[sats[sat]['key'], sats[sat]['hashdiff']], sats[sat]['fields']])
+    fields_sat = ','.join(listmerge([[sats[sat]['key'], sats[sat]['hashdiff']], sats[sat]['fields']]))
     key_sat = sats[sat]['key']
     hash_sat = sats[sat]['hashdiff']
     fill_sat = PostgresOperator(
