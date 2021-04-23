@@ -1,6 +1,7 @@
 from datetime import timedelta, datetime
 from random import randint
 from itertools import chain
+import re
 
 from airflow import DAG
 from airflow.operators.postgres_operator import PostgresOperator
@@ -66,7 +67,7 @@ ods_loaded = DummyOperator(task_id="ods_loaded", dag=dag)
 clear_ods >> fill_ods >> clear_payment_hashed >> fill_payment_hashed >> ods_loaded
 
 all_hub_loaded = DummyOperator(task_id="all_hub_loaded", dag=dag)
-
+all_link_loaded = DummyOperator(task_id="all_link_loaded", dag=dag)
 #hubs
 hubs_link = {'hub_user': {'fields': ['USER_PK','USER_KEY','LOAD_DATE','RECORD_SOURCE']},
         'hub_billing': {'fields': ['BILLING_PERIOD_PK', 'BILLING_PERIOD_KEY', 'LOAD_DATE', 'RECORD_SOURCE']},
@@ -84,7 +85,12 @@ for h in hubs_link.keys():
         insert into {{ params.schemaName }}.dds_%s (%s)
         select %s from {{ params.schemaName }}.dds_%s_etl                          
     """ % (h, fields, fields, h))
-    ods_loaded >> fill_hab >> all_hub_loaded
+    if re.match(r'^hub_.{1,}$', h):
+        ods_loaded >> fill_hab >> all_hub_loaded
+
+    if re.match(r'^link_.{1,}$',h):
+        ods_loaded >> fill_hab >> all_link_loaded
+
 
 #sat
 all_sat_loaded = DummyOperator(task_id="all_sat_loaded", dag=dag)
