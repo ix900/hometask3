@@ -139,4 +139,8 @@ for sat in sats.keys():
                          WHERE lts.%s is null
             """ % (sat, fields_sat, fields_sat, sat, key_sat, key_sat, key_sat, key_sat, key_sat, hash_sat, hash_sat, hash_sat  )
     )
-    all_hub_loaded >> fill_sat >> all_sat_loaded
+
+    if re.match(r'^link_.{1,}$', sat) is None:
+        all_hub_loaded >> fill_sat >> all_sat_loaded
+    else:
+        all_link_loaded >> fill_sat >> all_link_loaded
