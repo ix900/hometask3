@@ -12,7 +12,7 @@ USERNAME = 'dlybin'
 
 default_args = {
     'owner': USERNAME,
-    'start_date': datetime(2019, 1, 1, 0, 0, 0)
+    'start_date': datetime(2013, 1, 1, 0, 0, 0)
 }
 
 dag = DAG(
