@@ -94,12 +94,13 @@ all_link_loaded = DummyOperator(task_id="all_link_loaded", dag=dag)
 all_sat_loaded = DummyOperator(task_id="all_sat_loaded", dag=dag)
 sats = {'user_info': {'fields': ['USER_PK','USER_HASHDIFF','PHONE','EFFECTIVE_DATE','LOAD_DATE','RECORD_SOURCE']}
         }
-for s in sats.keys():
+for sat in sats.keys():
+    fields_sat = ','.join(sats[sat]['fields'])
     fill_sat = PostgresOperator(
-        task_id="fill_sat_%s" % s,
+        task_id="fill_sat_%s" % sat,
         dag=dag,
         sql="""
-               INSERT INTO {{ params.schemaName }}.dds_sat_user_info (%s) 
+               INSERT INTO {{ params.schemaName }}.dds_sat_%s (%s) 
                WITH source_data AS (
                     SELECT %s
                     FROM {{ params.schemaName }}.ods_payment_hashed v
@@ -123,9 +124,6 @@ for s in sats.keys():
                          FROM source_data as src
                          LEFT JOIN latest_records as lts ON lts.USER_HASHDIFF = src.USER_HASHDIFF AND lts.USER_PK = src.USER_PK
                          WHERE lts.USER_HASHDIFF is null
-            """)
+            """ % (sat, fields_sat, fields_sat)
+    )
     all_hub_loaded >> fill_sat >> all_sat_loaded
-
-
-
-
