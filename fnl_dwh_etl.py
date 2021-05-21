@@ -46,8 +46,9 @@ def test():
 hook_task = PythonOperator(
     task_id="htask",
     python_callable=get_ods_tables,
-    dag=dag
+    dag=dag,
+    op_kwargs={'schemaName': '{{ params.schemaName }}'}
 )
 
-start_task = DummyOperator(task_id='start_task', dag=dag, op_kwargs={'schemaName': '{{ params.schemaName }}'})
+start_task = DummyOperator(task_id='start_task', dag=dag )
 start_task >> hook_task
