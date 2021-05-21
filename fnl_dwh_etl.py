@@ -29,7 +29,7 @@ dag = DAG(
 
 def get_ods_tables():
     request = "SELECT tbl_name FROM dlybin.f_meta_tables WHERE tbl_name like 'f%ods%'"
-    pg_hook = PostgresHook(schema="dlybin")
+    pg_hook = PostgresHook()
     conn = pg_hook.get_conn()
     cursor = conn.cursor()
     cursor.execute(request)
@@ -37,10 +37,12 @@ def get_ods_tables():
     for source in sources:
         print("Source: {0} - activate: {1}".format(source[0],source[1]))
     return sources
+def test():
+    print('Hello')
 
 hook_task = PythonOperator(
     task_id="htask",
-    python_callable=get_ods_tables,
+    python_callable=test,
     dag=dag
 )
 
