@@ -29,8 +29,8 @@ dag = DAG(
 
 def get_ods_tables(schemaName=""):
     request = """SELECT table_name FROM information_schema.tables 
-                 WHERE table_schema=schemaName and table_type='BASE TABLE' and table_name like 'f%ods%'
-              """
+                 WHERE table_schema='{0}' and table_type='BASE TABLE' and table_name like 'f%ods%'
+              """.format(schemaName)
     pg_hook = PostgresHook()
     conn = pg_hook.get_conn()
     cursor = conn.cursor()
