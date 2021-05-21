@@ -27,7 +27,7 @@ dag = DAG(
     params={'schemaName': USERNAME},
 )
 
-def get_ods_tables(schemaName):
+def get_ods_tables(schemaName=""):
     request = """SELECT table_name FROM information_schema.tables 
                  WHERE table_schema=schemaName and table_type='BASE TABLE' and table_name like 'f%ods%'
               """
