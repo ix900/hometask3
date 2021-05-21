@@ -28,14 +28,14 @@ dag = DAG(
 )
 
 def get_ods_tables():
-    request = "SELECT * FROM information_schema.tables WHERE table_schema='dlybin' and table_type='BASE TABLE' and table_name like 'f%ods%'"
+    request = "SELECT table_name FROM information_schema.tables WHERE table_schema='{{ params.schemaName }}' and table_type='BASE TABLE' and table_name like 'f%ods%'"
     pg_hook = PostgresHook()
     conn = pg_hook.get_conn()
     cursor = conn.cursor()
     cursor.execute(request)
     sources = cursor.fetchall()
     for source in sources:
-        print("Source: {0} - activate: {1}".format(source[0],source[1]))
+        print("ods: {0}".format(source[0]))
     return sources
 
 def test():
