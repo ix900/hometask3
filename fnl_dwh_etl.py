@@ -28,7 +28,7 @@ dag = DAG(
 )
 
 def get_ods_tables():
-    request = "SELECT tbl_name FROM dlybin.f_meta_tables WHERE tbl_name like 'f%ods%'"
+    request = "SELECT * FROM information_schema.tables WHERE table_schema='dlybin' and table_type='BASE TABLE' and table_name like 'f%ods%'"
     pg_hook = PostgresHook()
     conn = pg_hook.get_conn()
     cursor = conn.cursor()
