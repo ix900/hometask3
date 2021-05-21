@@ -37,12 +37,13 @@ def get_ods_tables():
     for source in sources:
         print("Source: {0} - activate: {1}".format(source[0],source[1]))
     return sources
+
 def test():
     print('Hello')
 
 hook_task = PythonOperator(
     task_id="htask",
-    python_callable=test,
+    python_callable=get_ods_tables,
     dag=dag
 )
 
