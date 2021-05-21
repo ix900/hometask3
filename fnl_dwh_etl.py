@@ -38,11 +38,11 @@ def fill_ods_tables(schemaName="", execute_year=""):
     for tbl_name, tbl_fill_query, tbl_del_query in sources:
         print(tbl_name)
         print(tbl_del_query.format(schemaName, execute_year))
-        cursor_fill = conn.cursor()
-        cursor_fill.execute(tbl_del_query.format(schemaName, execute_year))
+        cursor.execute(tbl_del_query.format(schemaName, execute_year))
         print(tbl_fill_query.format(schemaName, execute_year))
-        cursor_del = conn.cursor()
-        cursor_del.execute(tbl_fill_query.format(schemaName, execute_year))
+        cursor.execute(tbl_fill_query.format(schemaName, execute_year))
+        cursor.execute('commit')
+
 
 fill_ods_task = PythonOperator(
     task_id="fill_ods_tables",
