@@ -16,7 +16,7 @@ default_args = {
 }
 
 dag = DAG(
-    USERNAME + '_f_dwh_etl',
+    USERNAME + '_dwh_etl',
     default_args=default_args,
     description='DLYBIN FINAL DWH ETL tasks ',
     schedule_interval="0 0 1 1 *",
