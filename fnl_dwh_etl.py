@@ -27,8 +27,10 @@ dag = DAG(
     params={'schemaName': USERNAME},
 )
 
-def get_ods_tables():
-    request = "SELECT table_name FROM information_schema.tables WHERE table_schema='{{ params.schemaName }}' and table_type='BASE TABLE' and table_name like 'f%ods%'"
+def get_ods_tables(schemaName):
+    request = """SELECT table_name FROM information_schema.tables 
+                 WHERE table_schema=schemaName and table_type='BASE TABLE' and table_name like 'f%ods%'
+              """
     pg_hook = PostgresHook()
     conn = pg_hook.get_conn()
     cursor = conn.cursor()
@@ -47,5 +49,5 @@ hook_task = PythonOperator(
     dag=dag
 )
 
-start_task = DummyOperator(task_id='start_task', dag=dag)
+start_task = DummyOperator(task_id='start_task', dag=dag, op_kwargs={'schemaName': '{{ params.schemaName }}'})
 start_task >> hook_task
