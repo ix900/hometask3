@@ -36,10 +36,10 @@ def fill_ods_tables(schemaName="", execute_year=""):
     cursor.execute(request)
     sources = cursor.fetchall()
     for tbl_name, tbl_fill_query, tbl_del_query in sources:
-        print(tbl_name)
-        print(tbl_del_query.format(schemaName, execute_year))
-        cursor.execute(tbl_del_query.format(schemaName, execute_year))
-        print(tbl_fill_query.format(schemaName))
+        print(type(tbl_name))
+        print(type(tbl_del_query.format(schemaName, execute_year)))
+        cursor.execute(str(tbl_del_query).format(schemaName, execute_year))
+        print(str(tbl_fill_query).format(schemaName))
         cursor.execute(tbl_fill_query.format(schemaName))
 
 fill_ods_task = PythonOperator(
