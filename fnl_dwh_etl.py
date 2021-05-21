@@ -27,28 +27,24 @@ dag = DAG(
     params={'schemaName': USERNAME},
 )
 
-def get_ods_tables(schemaName=""):
-    request = """SELECT table_name FROM information_schema.tables 
-                 WHERE table_schema='{0}' and table_type='BASE TABLE' and table_name like 'f%ods%'
-              """.format(schemaName)
+
+def clear_ods_tables(schemaName="", execute_year=""):
+    request = "SELECT tbl_name, tbl_fill_query, tbl_del_query FROM {0}.f_meta_ods".format(schemaName)
     pg_hook = PostgresHook()
     conn = pg_hook.get_conn()
     cursor = conn.cursor()
     cursor.execute(request)
     sources = cursor.fetchall()
-    for source in sources:
-        print("ods: {0}".format(source[0]))
-    return sources
-
-def test():
-    print('Hello')
+    for tbl_name, tbl_fill_query, tbl_del_query in sources:
+        cursor.execute(tbl_del_query.format(schemaName, execute_year))
+        cursor.execute(tbl_fill_query.format(schemaName))
 
 hook_task = PythonOperator(
     task_id="htask",
     python_callable=get_ods_tables,
     dag=dag,
-    op_kwargs={'schemaName': '{{ params.schemaName }}'}
+    op_kwargs={'schemaName': '{{ params.schemaName }}', 'execute_year': '{{ execution_date.year }}'}
 )
 
-start_task = DummyOperator(task_id='start_task', dag=dag )
+start_task = DummyOperator(task_id='start_task', dag=dag)
 start_task >> hook_task
