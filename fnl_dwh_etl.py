@@ -15,6 +15,8 @@ default_args = {
     'start_date': datetime(2018, 1, 1, 0, 0, 0)
 }
 
+
+
 dag = DAG(
     USERNAME + '_fnl_dwh_etl',
     default_args=default_args,
@@ -23,13 +25,20 @@ dag = DAG(
     params={'schemaName': USERNAME},
 )
 
-tables = PostgresOperator(
-    task_id="tbl",
-    dag=dag,
-    sql="""
-        SELECT tbl_name FROM {{ params.schemaName }}.f_meta_tables WHERE tbl_name like 'f%ods%'
-    """
+def get_ods_tables():
+    request = "SELECT tbl_name FROM {{ params.schemaName }}.f_meta_tables WHERE tbl_name like 'f%ods%'"
+    pg_hook = PostgresHook(schema="dlybin")
+    conn = pg_hook.get_conn()
+    cursor = conn.cursor()
+    cursor.execute(request)
+    sources = cursor.fetchall()
+    for source in sources:
+        print("Source: {0} - ctivate: {1}".format(source[0],source[1]))
+    return sources
+
+hook_task = PythonOperator(
+    task_id="htask",
+    python_callable=get_ods_tables
 )
 
-print(tables)
-
+hook_task
