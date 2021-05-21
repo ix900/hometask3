@@ -39,7 +39,9 @@ def get_ods_tables():
 
 hook_task = PythonOperator(
     task_id="htask",
-    python_callable=get_ods_tables
+    python_callable=get_ods_tables,
+    dag=dag
 )
 
-hook_task
+start_task = DummyOperator(task_id='start_task',dag=dag)
+start_task >> hook_task
