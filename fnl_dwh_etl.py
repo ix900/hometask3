@@ -28,7 +28,7 @@ dag = DAG(
 )
 
 
-def clear_ods_tables(schemaName="", execute_year=""):
+def fill_ods_tables(schemaName="", execute_year=""):
     request = "SELECT tbl_name, tbl_fill_query, tbl_del_query FROM {0}.f_meta_ods".format(schemaName)
     pg_hook = PostgresHook()
     conn = pg_hook.get_conn()
@@ -39,12 +39,12 @@ def clear_ods_tables(schemaName="", execute_year=""):
         cursor.execute(tbl_del_query.format(schemaName, execute_year))
         cursor.execute(tbl_fill_query.format(schemaName))
 
-hook_task = PythonOperator(
-    task_id="htask",
-    python_callable=get_ods_tables,
+fill_ods_task = PythonOperator(
+    task_id="fill_ods_tables",
+    python_callable=fill_ods_tables,
     dag=dag,
     op_kwargs={'schemaName': '{{ params.schemaName }}', 'execute_year': '{{ execution_date.year }}'}
 )
 
 start_task = DummyOperator(task_id='start_task', dag=dag)
-start_task >> hook_task
+start_task >> fill_ods_task
