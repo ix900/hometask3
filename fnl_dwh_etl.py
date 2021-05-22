@@ -50,10 +50,13 @@ def fill_dds_tables(schemaName="", execute_date="", table_type=""):
     cursor.execute(request)
     sources = cursor.fetchall()
     for tbl_name, tbl_fill_query in sources:
-        if execute_date is not None:
-            cursor.execute(tbl_fill_query.format(schemaName, execute_date))
+        if len(tbl_fill_query) > 0:
+            if execute_date is not None:
+                cursor.execute(tbl_fill_query.format(schemaName, execute_date))
+            else:
+                cursor.execute(tbl_fill_query.format(schemaName))
         else:
-            cursor.execute(tbl_fill_query.format(schemaName))
+            raise Exception("Query for fill %s is empty!" % tbl_name)
         cursor.execute('commit')
 
 
