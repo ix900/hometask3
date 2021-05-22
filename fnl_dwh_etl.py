@@ -28,7 +28,7 @@ dag = DAG(
 )
 
 
-def fill_ods_tables(schemaName="", execute_year=""):
+def fill_ods_tables(schemaName="", execute_date=""):
     request = "SELECT tbl_name, tbl_fill_query, tbl_del_query FROM {0}.f_meta_ods".format(schemaName)
     pg_hook = PostgresHook()
     conn = pg_hook.get_conn()
@@ -36,8 +36,8 @@ def fill_ods_tables(schemaName="", execute_year=""):
     cursor.execute(request)
     sources = cursor.fetchall()
     for tbl_name, tbl_fill_query, tbl_del_query in sources:
-        cursor.execute(tbl_del_query.format(schemaName, execute_year))
-        cursor.execute(tbl_fill_query.format(schemaName, execute_year))
+        cursor.execute(tbl_del_query.format(schemaName, execute_date))
+        cursor.execute(tbl_fill_query.format(schemaName, execute_date))
         cursor.execute('commit')
 
 def fill_dds_tables(schemaName="", execute_date="", table_type=""):
@@ -61,10 +61,10 @@ def fill_dds_tables(schemaName="", execute_date="", table_type=""):
 
 
 fill_ods_task = PythonOperator(
-    task_id="clear_and_fill_ods_tables",
+    task_id="fill_ods_tables",
     python_callable=fill_ods_tables,
     dag=dag,
-    op_kwargs={'schemaName': '{{ params.schemaName }}', 'execute_year': '{{ execution_date.year }}'}
+    op_kwargs={'schemaName': '{{ params.schemaName }}', 'execute_year': '{{ execution_date }}'}
 )
 
 fill_dds_hub_task = PythonOperator(
