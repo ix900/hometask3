@@ -64,7 +64,7 @@ fill_ods_task = PythonOperator(
     task_id="fill_ods_tables",
     python_callable=fill_ods_tables,
     dag=dag,
-    op_kwargs={'schemaName': '{{ params.schemaName }}', 'execute_year': '{{ execution_date }}'}
+    op_kwargs={'schemaName': '{{ params.schemaName }}', 'execute_date': '{{ execution_date }}'}
 )
 
 fill_dds_hub_task = PythonOperator(
