@@ -40,7 +40,7 @@ def fill_ods_tables(schemaName="", execute_year=""):
         cursor.execute(tbl_fill_query.format(schemaName, execute_year))
         cursor.execute('commit')
 
-def fill_dds_tables(schemaName="", execute_year="", table_type=""):
+def fill_dds_tables(schemaName="", execute_date="", table_type=""):
     request = """ select distinct tbl_name,tbl_fill_query
                   from {0}.f_meta_tables, {0}.f_meta_type
                   where tbl_type_id = type_id and type_name='{1}' """.format(schemaName, table_type)
@@ -50,8 +50,8 @@ def fill_dds_tables(schemaName="", execute_year="", table_type=""):
     cursor.execute(request)
     sources = cursor.fetchall()
     for tbl_name, tbl_fill_query in sources:
-        if execute_year is not None:
-            cursor.execute(tbl_fill_query.format(schemaName, execute_year))
+        if execute_date is not None:
+            cursor.execute(tbl_fill_query.format(schemaName, execute_date))
         else:
             cursor.execute(tbl_fill_query.format(schemaName))
         cursor.execute('commit')
@@ -68,31 +68,33 @@ fill_dds_hub_task = PythonOperator(
     task_id="fill_hub",
     python_callable=fill_dds_tables,
     dag=dag,
-    op_kwargs={'schemaName': '{{ params.schemaName }}', 'execute_year': None, 'table_type': 'hub'}
+    op_kwargs={'schemaName': '{{ params.schemaName }}', 'execute_date': None, 'table_type': 'hub'}
 )
 
 fill_dds_link_task = PythonOperator(
     task_id="fill_link",
     python_callable=fill_dds_tables,
     dag=dag,
-    op_kwargs={'schemaName': '{{ params.schemaName }}', 'execute_year': None, 'table_type': 'link'}
+    op_kwargs={'schemaName': '{{ params.schemaName }}', 'execute_date': None, 'table_type': 'link'}
 )
 
 fill_dds_sat_task = PythonOperator(
     task_id="fill_sat",
     python_callable=fill_dds_tables,
     dag=dag,
-    op_kwargs={'schemaName': '{{ params.schemaName }}', 'execute_year': '{{ execution_date.year }}', 'table_type': 'satellite'}
+    op_kwargs={'schemaName': '{{ params.schemaName }}', 'execute_date': '{{ execution_date }}', 'table_type': 'satellite'}
 )
 
 start_task = DummyOperator(task_id='start_task', dag=dag)
 end_task = DummyOperator(task_id='start_task', dag=dag)
 ods_loaded = DummyOperator(task_id="ods_loaded", dag=dag)
-all_hub_loaded = DummyOperator(task_id="all_hub_loaded", dag=dag)
-all_sat_loaded = DummyOperator(task_id="all_sat_loaded", dag=dag)
-all_link_loaded = DummyOperator(task_id="all_link_loaded", dag=dag)
+all_loaded = DummyOperator(task_id="all_loaded", dag=dag)
 
-start_task >> fill_ods_task >> ods_loaded >> fill_dds_hub_task >> all_hub_loaded >> fill_dds_link_task >> all_link_loaded >> fill_dds_sat_task >> all_sat_loaded
+
+start_task >> fill_ods_task >> ods_loaded
+ods_loaded >> fill_dds_hub_task
+ods_loaded >> fill_dds_link_task
+ods_loaded >> fill_dds_sat_task >> all_loaded
 
 
 
