@@ -43,7 +43,7 @@ def fill_ods_tables(schemaName="", execute_year=""):
 def fill_dds_tables(schemaName="", execute_year="", table_type=""):
     request = """ select distinct tbl_name,tbl_fill_query
                   from {0}.f_meta_tables, {0}.f_meta_type
-                  where tbl_id = fld_tbl_id and tbl_type_id = type_id and type_name='{1}' """.format(schemaName, table_type)
+                  where tbl_type_id = type_id and type_name='{1}' """.format(schemaName, table_type)
     pg_hook = PostgresHook()
     conn = pg_hook.get_conn()
     cursor = conn.cursor()
