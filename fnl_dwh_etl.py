@@ -39,13 +39,13 @@ def fill_ods_tables(schemaName="", execute_date=""):
         try:
             cursor.execute(tbl_del_query.format(schemaName, execute_date))
         except Exception as e:
-            print('Ошибка:%s Запрос:%s' % (e, tbl_del_query))
-            raise Exception("stop")
+            raise Exception('Ошибка:%s Запрос:%s' % (e, tbl_del_query))
+
         try:
             cursor.execute(tbl_fill_query.format(schemaName, execute_date))
         except Exception as e:
-            print('Ошибка:%s Запрос:%s' % (e, tbl_fill_query))
-            raise Exception("stop")
+            raise Exception('Ошибка:%s Запрос:%s' % (e, tbl_fill_query))
+
         cursor.execute('commit')
 
 def fill_dds_tables(schemaName="", execute_date="", table_type=""):
