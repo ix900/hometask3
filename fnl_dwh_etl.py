@@ -86,7 +86,6 @@ fill_dds_sat_task = PythonOperator(
 )
 
 start_task = DummyOperator(task_id='start_task', dag=dag)
-end_task = DummyOperator(task_id='start_task', dag=dag)
 ods_loaded = DummyOperator(task_id="ods_loaded", dag=dag)
 all_loaded = DummyOperator(task_id="all_loaded", dag=dag)
 
