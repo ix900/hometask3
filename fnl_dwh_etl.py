@@ -93,9 +93,9 @@ all_sat_loaded = DummyOperator(task_id="all_sat_loaded", dag=dag)
 all_link_loaded = DummyOperator(task_id="all_link_loaded", dag=dag)
 
 start_task >> fill_ods_task >> ods_loaded
-ods_loaded >> fill_dds_hub_task >> all_hub_loaded >> end_task
-ods_loaded >> fill_dds_link_task >> all_link_loaded >> end_task
-ods_loaded >> fill_dds_sat_task >> all_sat_loaded >> end_task
+ods_loaded >> fill_dds_hub_task >> all_hub_loaded
+ods_loaded >> fill_dds_link_task >> all_link_loaded
+ods_loaded >> fill_dds_sat_task >> all_sat_loaded
 
 
 
