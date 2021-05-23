@@ -14,7 +14,7 @@ USERNAME = 'dlybin'
 
 default_args = {
     'owner': USERNAME,
-    'start_date': datetime(2018, 1, 1, 0, 0, 0)
+    'start_date': datetime(2012, 1, 1, 0, 0, 0)
 }
 
 
