@@ -127,6 +127,7 @@ fill_dm_fct_task = PythonOperator(
 )
 
 start_task = DummyOperator(task_id='start_task', dag=dag)
+dds_loaded = DummyOperator(task_id='dds_loaded', dag=dag)
 end_task = DummyOperator(task_id='end_task', dag=dag)
 ods_loaded = DummyOperator(task_id="ods_loaded", dag=dag)
 all_loaded = DummyOperator(task_id="all_loaded", dag=dag)
@@ -136,7 +137,8 @@ start_task >> fill_ods_task >> ods_loaded
 ods_loaded >> fill_dds_hub_task >> all_loaded
 ods_loaded >> fill_dds_link_task >> all_loaded
 ods_loaded >> fill_dds_sat_task >> all_loaded
-all_loaded >> fill_dm_tmp_task >> fill_dm_dim_task >> fill_dm_fct_task >> end_task
+all_loaded >> dds_loaded
+dds_loaded >> fill_dm_tmp_task >> fill_dm_dim_task >> fill_dm_fct_task >> end_task
 
 
 
