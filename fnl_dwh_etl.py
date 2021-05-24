@@ -51,7 +51,7 @@ dag = DAG(
 #         cursor.execute('commit')
 
 def fill_tables(schemaName="", execute_date="", table_type=""):
-    request = """ select distinct tbl_name,tbl_fill_query, tbl_del_query
+    request = """ select tbl_name,tbl_fill_query, tbl_del_query
                   from {0}.f_meta_tables, {0}.f_meta_type
                   where tbl_type_id = type_id and type_name='{1}' order by tbl_id """.format(schemaName, table_type)
     pg_hook = PostgresHook()
