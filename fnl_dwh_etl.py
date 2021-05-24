@@ -27,29 +27,6 @@ dag = DAG(
     params={'schemaName': USERNAME},
 )
 
-
-# def fill_ods_tables(schemaName="", execute_date=""):
-#     request = """select distinct tbl_name,tbl_fill_query, tbl_del_query
-#                   from {0}.f_meta_tables, {0}.f_meta_type
-#                   where tbl_type_id = type_id and type_name='{1}' order by tbl_id""".format(schemaName, table_type)
-#     pg_hook = PostgresHook()
-#     conn = pg_hook.get_conn()
-#     cursor = conn.cursor()
-#     cursor.execute(request)
-#     sources = cursor.fetchall()
-#     for tbl_name, tbl_fill_query, tbl_del_query in sources:
-#         try:
-#             cursor.execute(tbl_del_query.format(schemaName, execute_date))
-#         except Exception as e:
-#             raise Exception('Ошибка:%s Запрос:%s' % (e, tbl_del_query))
-#
-#         try:
-#             cursor.execute(tbl_fill_query.format(schemaName, execute_date))
-#         except Exception as e:
-#             raise Exception('Ошибка:%s Запрос:%s' % (e, tbl_fill_query))
-#
-#         cursor.execute('commit')
-
 def fill_tables(schemaName="", execute_date="", table_type=""):
     request = """ select tbl_name,tbl_fill_query, tbl_del_query
                   from {0}.f_meta_tables, {0}.f_meta_type
@@ -60,20 +37,24 @@ def fill_tables(schemaName="", execute_date="", table_type=""):
     cursor.execute(request)
     sources = cursor.fetchall()
     for tbl_name, tbl_fill_query, tbl_del_query in sources:
-
-        if tbl_del_query is not None and tbl_fill_query is not None:
-            if execute_date is not None:
-                cursor.execute(tbl_del_query.format(schemaName, execute_date))
+        try:
+            if tbl_del_query is not None and tbl_fill_query is not None:
+                if execute_date is not None:
+                    cursor.execute(tbl_del_query.format(schemaName, execute_date))
+                else:
+                    cursor.execute(tbl_del_query.format(schemaName))
+        except Exception as e:
+               raise Exception('Ошибка:%s Запрос:%s' % (e, tbl_del_query))
+        try:
+            if tbl_fill_query is not None:
+                if execute_date is not None:
+                    cursor.execute(tbl_fill_query.format(schemaName, execute_date))
+                else:
+                    cursor.execute(tbl_fill_query.format(schemaName))
             else:
-                cursor.execute(tbl_del_query.format(schemaName))
-
-        if tbl_fill_query is not None:
-            if execute_date is not None:
-                cursor.execute(tbl_fill_query.format(schemaName, execute_date))
-            else:
-                cursor.execute(tbl_fill_query.format(schemaName))
-        else:
-            raise Exception("Query for fill %s is empty!" % tbl_name)
+                raise Exception("Query for fill %s is empty!" % tbl_name)
+        except Exception as e:
+               raise Exception('Ошибка:%s Запрос:%s' % (e, tbl_fill_query))
         cursor.execute('commit')
 
 
