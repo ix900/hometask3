@@ -61,13 +61,13 @@ def fill_tables(schemaName="", execute_date="", table_type=""):
     sources = cursor.fetchall()
     for tbl_name, tbl_fill_query, tbl_del_query in sources:
 
-        if len(tbl_del_query) > 0 and len(tbl_fill_query) > 0:
+        if tbl_del_query is not None and tbl_fill_query is not None:
             if execute_date is not None:
                 cursor.execute(tbl_del_query.format(schemaName, execute_date))
             else:
                 cursor.execute(tbl_del_query.format(schemaName))
 
-        if len(tbl_fill_query) > 0:
+        if tbl_fill_query is not None:
             if execute_date is not None:
                 cursor.execute(tbl_fill_query.format(schemaName, execute_date))
             else:
